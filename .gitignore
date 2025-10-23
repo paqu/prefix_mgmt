@@ -1,0 +1,91 @@
+# Compiled object files and libraries
+*.o
+*.obj
+*.lo
+*.la
+*.al
+*.libs
+*.dll
+*.so
+*.so.*
+*.dylib
+*.exe
+*.out
+*.app
+*.i
+*.ii
+*.s
+*.S
+
+# Compiler-generated temporary files
+*.d
+*.gcda
+*.gcno
+*.gcov
+*.gcda.*
+*.gcno.*
+*.gcov.*
+*.prof
+*.profraw
+*.profdata
+
+# Archives and packaged files
+*.a
+*.lib
+*.lai
+*.jar
+*.zip
+*.tar
+*.gz
+*.bz2
+*.7z
+
+# Build system generated files (Make, Autotools, CMake, etc.)
+Makefile
+Makefile.in
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CMakeScripts/
+Testing/
+CTestTestfile.cmake
+compile_commands.json
+build/
+build-*/
+out/
+bin/
+lib/
+
+# Log and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+*.old
+
+# IDE and editor configurations
+# VS Code
+.vscode/
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+# Eclipse
+.project
+.cproject
+.settings/
+# Code::Blocks
+*.layout
+*.depend
+# Visual Studio
+.vs/
+*.user
+*.sdf
+*.opensdf
+*.db
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
