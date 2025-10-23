@@ -21,6 +21,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build example programs" ON)
+option(BUILD_DOCS "Build documentation" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
@@ -37,5 +38,10 @@ endif()
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
+
+if(BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
+
 
 

@@ -1,0 +1,16 @@
+PROJECT_NAME           = "IPv4 Prefix Management"
+PROJECT_NUMBER         = @PROJECT_VERSION@
+PROJECT_BRIEF          = "System for managing IPv4 prefix collections"
+OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/doxygen
+INPUT                  = @PROJECT_SOURCE_DIR@/include @PROJECT_SOURCE_DIR@/src
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+OPTIMIZE_OUTPUT_FOR_C  = YES
+TYPEDEF_HIDES_STRUCT   = YES
+
+
