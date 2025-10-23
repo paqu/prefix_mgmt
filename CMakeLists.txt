@@ -22,6 +22,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build example programs" ON)
 option(BUILD_DOCS "Build documentation" ON)
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
+if(ENABLE_COVERAGE)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
@@ -41,6 +47,20 @@ endif()
 
 if(BUILD_DOCS)
     add_subdirectory(docs)
+endif()
+
+
+
+# Coverage target
+if(ENABLE_COVERAGE)
+    add_custom_target(coverage
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+        COMMAND lcov --capture --directory src --output-file coverage.info
+        COMMAND lcov --list coverage.info
+        COMMAND genhtml coverage.info --output-directory coverage_html
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Generating coverage report"
+    )
 endif()
 
 
