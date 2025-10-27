@@ -1,4 +1,5 @@
 #include "prefix_mgmt/prefix_mgmt.h"
+#include <stdbool.h>
 
 /**
  * @file prefix_mgmt.c
@@ -6,8 +7,16 @@
  *
  */
 
+/**
+ * @brief Validate mask
+ */
+static bool is_valid_mask(char mask) { return mask >= 0 && mask <= 32; }
+
 int add(unsigned int base, char mask) {
-    // TODO: Implement prefix addition logic
+    if (!is_valid_mask(mask)) {
+        return -1;
+    }
+
     return 0;
 }
 
