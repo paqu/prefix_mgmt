@@ -1,6 +1,8 @@
 #ifndef PREFIX_MGMT_H
 #define PREFIX_MGMT_H
 
+#include <stdbool.h>
+
 /**
  * @file prefix_mgmt.h
  * @brief Interface for IPv4 Prefix Management System.
@@ -10,6 +12,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Radix trie node
+ *
+ * Unlike binary trie where each node represents one bit,
+ * radix node can represent multiple bits (compressed path).
+ */
+typedef struct radix_node {
+    struct radix_node *left;  /**< Child for bit sequence starting with 0 */
+    struct radix_node *right; /**< Child for bit sequence starting with 1 */
+
+    unsigned int prefix; /**< Prefix bits stored in this node */
+    unsigned char skip;  /**< Number of bits to skip (path compression) */
+
+    bool is_prefix; /**< True if this represents a complete prefix */
+    char mask;      /**< Mask length if is_prefix is true */
+} radix_node_t;
 
 /**
  * @brief Adds an IPv4 prefix to the collection.
