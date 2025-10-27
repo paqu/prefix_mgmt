@@ -27,3 +27,13 @@ TEST_F(AddFunctionTest, InvalidMaskAboveRange) {
     unsigned int base = 0x0A000000; // 10.0.0.0
     EXPECT_EQ(-1, add(base, 33));
 }
+
+// TC-ADD-4: Invalid Base - Misaligned
+TEST_F(AddFunctionTest, InvalidBaseMisaligned) {
+    unsigned int base = 0x80000000;
+
+    for (int i = 1; i < 32; i++) {
+        base >>= 1;
+        EXPECT_EQ(-1, add(base, i));
+    }
+}
