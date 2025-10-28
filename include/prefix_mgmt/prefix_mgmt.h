@@ -30,6 +30,11 @@ typedef struct radix_node {
     char mask;      /**< Mask length if is_prefix is true */
 } radix_node_t;
 
+radix_node_t *get_root_addr(void);
+
+int prefix_mgmt_init(void);
+void prefix_mgmt_cleanup(void);
+
 /**
  * @brief Adds an IPv4 prefix to the collection.
  *
