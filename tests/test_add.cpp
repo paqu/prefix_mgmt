@@ -64,8 +64,19 @@ class AddFunctionTest : public ::testing::Test {
 
 // TC-ADD-1: Valid Prefix Addition
 TEST_F(AddFunctionTest, ValidPrefixAddition) {
+
     unsigned int base = 0x0A000000; // 10.0.0.0
     EXPECT_EQ(0, add(base, 16));
+
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+    radix_node_t *root_ptr = get_root_addr();
+
+    EXPECT_TRUE(root_ptr != NULL);
+
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(1, path_count);
 }
 
 // TC-ADD-2: Invalid Mask - Below Range
