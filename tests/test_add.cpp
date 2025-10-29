@@ -187,7 +187,6 @@ TEST_F(AddFunctionTest, ValidPrefixAdditionDifferentMask) {
     char mask;
     PathEntry *found;
 
-    /* First address  */
     base = 0x0A000000; // 10.0.0.0
     EXPECT_EQ(0, add(base, 16));
     EXPECT_EQ(0, add(base, 8));
@@ -219,6 +218,42 @@ TEST_F(AddFunctionTest, ValidPrefixAdditionDifferentMask) {
     EXPECT_TRUE(found != NULL);
     EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
     EXPECT_EQ(found->mask, 24);
+
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    prefix_mgmt_cleanup();
+
+    base = 0xFA000000;
+    EXPECT_EQ(0, add(base, 24));
+    EXPECT_EQ(0, add(base, 16));
+    EXPECT_EQ(0, add(base, 8));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count);
+
+    mask = 24;
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 24);
+
+    mask = 16;
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 16);
+
+    mask = 8;
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 8);
 }
 
 // TC-ADD-6: Duplicate Prefix
@@ -247,4 +282,13 @@ TEST_F(AddFunctionTest, DuplicatePrefix) {
     EXPECT_TRUE(found != NULL);
     EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
     EXPECT_EQ(found->mask, 16);
+}
+
+TEST_F(AddFunctionTest, BoundaryMask0) {
+    EXPECT_EQ(0, add(0, 0)); // 0.0.0.0/0
+}
+
+TEST_F(AddFunctionTest, BoundaryMask32) {
+    unsigned int base = 0x0A000000; // 10.0.0.0
+    EXPECT_EQ(0, add(base, 32));    // 10.0.0.0/32
 }
