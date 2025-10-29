@@ -1,5 +1,6 @@
 #include "prefix_mgmt/prefix_mgmt.h"
 #include <gtest/gtest.h>
+#include <string.h>
 
 #define MAX_PATH_LEN 33
 #define MAX_PATHS 1024
@@ -54,6 +55,20 @@ void traverse(radix_node_t *node, uint64_t prefix_bits, int shift,
 
     pop(stack);
 }
+PathEntry *find_path_by_prefix(PathEntry *paths, int path_count,
+                               uint64_t full_prefix) {
+    if (!paths || path_count <= 0) {
+        return NULL;
+    }
+
+    for (int i = 0; i < path_count; i++) {
+        if (paths[i].full_prefix == full_prefix) {
+            return &paths[i];
+        }
+    }
+
+    return NULL;
+}
 
 class AddFunctionTest : public ::testing::Test {
   protected:
@@ -65,18 +80,79 @@ class AddFunctionTest : public ::testing::Test {
 // TC-ADD-1: Valid Prefix Addition
 TEST_F(AddFunctionTest, ValidPrefixAddition) {
 
-    unsigned int base = 0x0A000000; // 10.0.0.0
-    EXPECT_EQ(0, add(base, 16));
-
     NodeStack stack = {.top = 0};
     PathEntry paths[MAX_PATHS];
     int path_count = 0;
-    radix_node_t *root_ptr = get_root_addr();
+    radix_node_t *root_ptr;
+    unsigned int base;
+    char mask;
+    PathEntry *found;
 
+    /* First address  */
+    base = 0x0A000000; // 10.0.0.0
+    mask = 16;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
     EXPECT_TRUE(root_ptr != NULL);
-
     traverse(root_ptr, 0, 0, &stack, paths, &path_count);
     EXPECT_EQ(1, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 16);
+
+    /* Second address */
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    base = 0xA0000000; // 160.0.0.0/8
+    mask = 8;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(2, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 8);
+
+    /* Third address - partial common prefix  */
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    base = 0xA1000000; // 161.0.0.0/8
+    mask = 8;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 8);
+
+    /* 4th address - partial common prefix -- overlapping  */
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    base = 0xA0000000; // 160.0.0.0/4
+    mask = 4;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(4, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 4);
 }
 
 // TC-ADD-2: Invalid Mask - Below Range
