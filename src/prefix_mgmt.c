@@ -150,6 +150,16 @@ int add(unsigned int base, char mask) {
             base, child->prefix << (32 - bit_pos - child->skip), bit_pos,
             (remaining < child->skip) ? remaining : child->skip);
 
+        if (match_bits == child->skip && match_bits == remaining) {
+            // Perfect match - mark as prefix
+            if (child->is_prefix && child->mask == mask) {
+                return 0; // Already exists
+            }
+            child->is_prefix = true;
+            child->mask = mask;
+            return 0;
+        }
+
         if (match_bits == child->skip) {
             // Full match with child's skip - continue traversal
             bit_pos += child->skip;
