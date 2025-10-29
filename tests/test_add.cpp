@@ -72,9 +72,9 @@ PathEntry *find_path_by_prefix(PathEntry *paths, int path_count,
 
 class AddFunctionTest : public ::testing::Test {
   protected:
-    void SetUp() override {}
+    void SetUp() override { prefix_mgmt_init(); }
 
-    void TearDown() override {}
+    void TearDown() override { prefix_mgmt_cleanup(); }
 };
 
 // TC-ADD-1: Valid Prefix Addition
@@ -175,4 +175,48 @@ TEST_F(AddFunctionTest, InvalidBaseMisaligned) {
         base >>= 1;
         EXPECT_EQ(-1, add(base, i));
     }
+}
+// TC-ADD-5: Valid prefix -- the same address different mask
+TEST_F(AddFunctionTest, ValidPrefixAdditionDifferentMask) {
+
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+    radix_node_t *root_ptr;
+    unsigned int base;
+    char mask;
+    PathEntry *found;
+
+    /* First address  */
+    base = 0x0A000000; // 10.0.0.0
+    EXPECT_EQ(0, add(base, 16));
+    EXPECT_EQ(0, add(base, 8));
+    EXPECT_EQ(0, add(base, 24));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count);
+
+    mask = 16;
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 16);
+
+    mask = 8;
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 8);
+
+    mask = 24;
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 24);
 }
