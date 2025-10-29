@@ -117,6 +117,13 @@ int add(unsigned int base, char mask) {
         }
     }
 
+    // Special case: /0 prefix at root
+    if (mask == 0) {
+        g_root->is_prefix = true;
+        g_root->mask = 0;
+        return 0;
+    }
+
     radix_node_t *current = g_root;
     int bit_pos = 0;
 
