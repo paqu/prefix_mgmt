@@ -220,3 +220,31 @@ TEST_F(AddFunctionTest, ValidPrefixAdditionDifferentMask) {
     EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
     EXPECT_EQ(found->mask, 24);
 }
+
+// TC-ADD-6: Duplicate Prefix
+TEST_F(AddFunctionTest, DuplicatePrefix) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+    radix_node_t *root_ptr;
+    unsigned int base;
+    char mask;
+    PathEntry *found;
+
+    base = 0x0A0B0000; // 10.0.0.0/8
+    mask = 16;
+    EXPECT_EQ(0, add(base, mask));
+    EXPECT_EQ(0, add(base, mask)); // Second add should succeed (no error)
+
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(1, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 16);
+}
