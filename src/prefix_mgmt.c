@@ -68,6 +68,19 @@ static unsigned int extract_bits(unsigned int ip, int start_bit, int num_bits) {
     return (ip >> (32 - start_bit - num_bits)) & mask;
 }
 
+static int count_matching_bits(unsigned int prefix1, unsigned int prefix2,
+                               int start_bit, int max_bits) {
+    int match = 0;
+    for (int i = 0; i < max_bits; i++) {
+        if (get_bit(prefix1, start_bit + i) !=
+            get_bit(prefix2, start_bit + i)) {
+            break;
+        }
+        match++;
+    }
+    return match;
+}
+
 /**
  * @brief Validate mask
  */
@@ -130,6 +143,76 @@ int add(unsigned int base, char mask) {
             *child_ptr = new_node;
             return 0;
         }
+
+        // Node exists - check for path compression match
+        radix_node_t *child = *child_ptr;
+        int match_bits = count_matching_bits(
+            base, child->prefix << (32 - bit_pos - child->skip), bit_pos,
+            (remaining < child->skip) ? remaining : child->skip);
+
+        if (match_bits == child->skip) {
+            // Full match with child's skip - continue traversal
+            bit_pos += child->skip;
+            current = child;
+            continue;
+        }
+        // Partial match - need to split the node
+        radix_node_t *split = create_node();
+        if (split == NULL) {
+            return -1;
+        }
+
+        // Split node contains matched portion
+        split->skip = match_bits;
+        split->prefix = extract_bits(base, bit_pos, match_bits);
+
+        // Adjust child node
+        int child_remaining = child->skip - match_bits;
+        unsigned int child_new_prefix =
+            child->prefix & ((1U << child_remaining) - 1);
+
+        child->skip = child_remaining;
+        child->prefix = child_new_prefix;
+
+        // Determine where child goes under split
+        int child_bit = (child->prefix >> (child_remaining - 1)) & 1;
+
+        if (child_bit == 0) {
+            split->left = child;
+        } else {
+            split->right = child;
+        }
+
+        // Insert split into tree
+        *child_ptr = split;
+
+        // Check if we need to add new branch
+        int new_remaining = remaining - match_bits;
+        if (new_remaining == 0) {
+            // Our prefix ends at split point
+            split->is_prefix = true;
+            split->mask = mask;
+        } else {
+            // Create new branch for remaining bits
+            radix_node_t *new_branch = create_node();
+            if (new_branch == NULL) {
+                return -1;
+            }
+
+            new_branch->skip = new_remaining;
+            new_branch->prefix =
+                extract_bits(base, bit_pos + match_bits, new_remaining);
+            new_branch->is_prefix = true;
+            new_branch->mask = mask;
+
+            int new_bit = get_bit(base, bit_pos + match_bits);
+            if (new_bit == 0) {
+                split->left = new_branch;
+            } else {
+                split->right = new_branch;
+            }
+        }
+        return 0;
     }
 
     return 0;
