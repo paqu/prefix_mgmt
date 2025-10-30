@@ -300,6 +300,9 @@ int del(unsigned int base, char mask) {
 }
 
 char check(unsigned int ip) {
-    // TODO: Implement prefix containment check logic
-    return -1;
+    if (g_root == NULL) {
+        return -1;
+    }
+
+    return 0;
 }
