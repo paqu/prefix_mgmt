@@ -244,6 +244,10 @@ int del(unsigned int base, char mask) {
         return -1;
     }
 
+    if (g_root == NULL) {
+        return 0; // Nothing to delete
+    }
+
     // TODO: Implement prefix deletion logic
     return 0;
 }
