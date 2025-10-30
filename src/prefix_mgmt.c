@@ -248,6 +248,13 @@ int del(unsigned int base, char mask) {
         return 0; // Nothing to delete
     }
 
+    // Special case: /0 prefix
+    if (mask == 0) {
+        g_root->is_prefix = false;
+        g_root->mask = -1;
+        return 0;
+    }
+
     // Traverse to find the prefix
     radix_node_t *current = g_root;
     int bit_pos = 0;
