@@ -14,6 +14,12 @@ add_executable(test_runner
     test_add.cpp
     test_check.cpp
     test_del.cpp
+    test_utils.cpp
+)
+
+target_include_directories(test_runner 
+    PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(test_runner
