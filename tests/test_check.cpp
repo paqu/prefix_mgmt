@@ -21,3 +21,20 @@ TEST_F(CheckFunctionTest, EmptyCollection) {
     EXPECT_EQ(-1, check(0x0A000000)); // 10.0.0.0
     EXPECT_EQ(-1, check(0xFFFFFFFF)); // 255.255.255.255
 }
+// TC-CHK-3: Boundary - IP 0.0.0.0
+TEST_F(CheckFunctionTest, BoundaryIP_0_0_0_0) {
+    add(0x00000000, 0); // 0.0.0.0/0 (default route)
+
+    EXPECT_EQ(0, check(0x00000000)); // 0.0.0.0
+}
+
+// TC-CHK-4: Default route catches everything
+TEST_F(CheckFunctionTest, DefaultRouteCatchesEverything) {
+    add(0x00000000, 0); // 0.0.0.0/0
+
+    // Everything should match
+    EXPECT_EQ(0, check(0x00000000));
+    EXPECT_EQ(0, check(0x0A000000));
+    EXPECT_EQ(0, check(0x7F000001));
+    EXPECT_EQ(0, check(0xFFFFFFFF));
+}
