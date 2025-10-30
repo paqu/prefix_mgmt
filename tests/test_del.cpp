@@ -32,10 +32,10 @@ TEST_F(DelFunctionTest, InvalidBaseMisaligned) {
 }
 
 // TC-DEL-4: Delete from empty tree - should succeed (no-op)
-TEST_F(DelFunctionTest, DeleteFromEmptyTree) {
-    prefix_mgmt_cleanup(); // Ensure tree is empty
+TEST_F(DelFunctionTest, DeleteFromEmptyNotInitializedTree) {
+    prefix_mgmt_cleanup(); // Ensure tree is not initialized
 
-    // Deleting from empty tree should succeed (graceful no-op)
+    // Deleting from not initialized tree should succeed (graceful no-op)
     EXPECT_EQ(0, del(0x0A000000, 16));
 }
 
@@ -318,4 +318,91 @@ TEST_F(DelFunctionTest, DeleteNonExistentPrefix) {
     PathEntry *found_non_existent = find_path_by_prefix(
         paths, path_count, (non_existent >> (32 - non_existent_mask)));
     EXPECT_TRUE(found_non_existent == NULL);
+}
+
+TEST_F(DelFunctionTest, DeleteFromEmptyTree) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+
+    unsigned int base = 0x0A000000; // 10.0.0.0/8
+    char mask = 8;
+
+    // Verify tree is empty initially
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(0, path_count); // Drzewo jest puste
+
+    // Act: Try to delete from empty tree
+    EXPECT_EQ(0, del(base, mask));
+
+    // Assert: Tree should still be empty
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(0, path_count); // Nadal puste
+
+    // Verify the prefix doesn't exist
+    PathEntry *found =
+        find_path_by_prefix(paths, path_count, (base >> (32 - mask)));
+    EXPECT_TRUE(found == NULL);
+}
+
+TEST_F(DelFunctionTest, DeleteSamePrefixMultipleTimesWithOtherPrefixes) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+
+    unsigned int base1 = 0x0A000000; // 10.0.0.0/8
+    char mask1 = 8;
+
+    unsigned int base2 = 0xC0A80000; // 192.168.0.0/16
+    char mask2 = 16;
+
+    unsigned int base3 = 0xAC100000; // 172.16.0.0/12
+    char mask3 = 12;
+
+    // Add three prefixes
+    EXPECT_EQ(0, add(base1, mask1));
+    EXPECT_EQ(0, add(base2, mask2));
+    EXPECT_EQ(0, add(base3, mask3));
+
+    // Verify all exist
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count);
+
+    // Delete base2 first time
+    EXPECT_EQ(0, del(base2, mask2));
+
+    // Verify base2 is gone, others remain
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(2, path_count);
+
+    EXPECT_TRUE(find_path_by_prefix(paths, path_count,
+                                    (base1 >> (32 - mask1))) != NULL);
+    EXPECT_TRUE(find_path_by_prefix(paths, path_count,
+                                    (base2 >> (32 - mask2))) == NULL);
+    EXPECT_TRUE(find_path_by_prefix(paths, path_count,
+                                    (base3 >> (32 - mask3))) != NULL);
+
+    // Try to delete base2 second time
+    EXPECT_EQ(0, del(base2, mask2));
+
+    // Verify nothing changed - still 2 prefixes
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(2, path_count);
+
+    EXPECT_TRUE(find_path_by_prefix(paths, path_count,
+                                    (base1 >> (32 - mask1))) != NULL);
+    EXPECT_TRUE(find_path_by_prefix(paths, path_count,
+                                    (base2 >> (32 - mask2))) == NULL);
+    EXPECT_TRUE(find_path_by_prefix(paths, path_count,
+                                    (base3 >> (32 - mask3))) != NULL);
 }
