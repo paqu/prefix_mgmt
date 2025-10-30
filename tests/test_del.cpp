@@ -164,3 +164,92 @@ TEST_F(DelFunctionTest, DeleteMultiplePrefixes) {
     EXPECT_TRUE(found2 == NULL);
     EXPECT_TRUE(found3 == NULL);
 }
+TEST_F(DelFunctionTest, DeleteDefaultRoute) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+    unsigned int base = 0x00000000; // 0.0.0.0
+    char mask = 0;                  // /0 - default route
+
+    EXPECT_EQ(0, add(base, mask));
+
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(1, path_count);
+
+    PathEntry *found =
+        find_path_by_prefix(paths, path_count, (base >> (32 - mask)));
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->mask, mask);
+
+    // Act: Delete default route
+    EXPECT_EQ(0, del(base, mask));
+
+    // Assert: Default route should be gone
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(0, path_count); // No prefixes should remain
+
+    found = find_path_by_prefix(paths, path_count, (base >> (32 - mask)));
+    EXPECT_TRUE(found == NULL);
+}
+
+TEST_F(DelFunctionTest, DeleteDefaultRouteWithOtherPrefixes) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+
+    unsigned int default_base = 0x00000000; // 0.0.0.0/0
+    char default_mask = 0;
+
+    unsigned int specific_base = 0x0A000000; // 10.0.0.0/8
+    char specific_mask = 8;
+
+    // Add default route and specific prefix
+    EXPECT_EQ(0, add(default_base, default_mask));
+    EXPECT_EQ(0, add(specific_base, specific_mask));
+
+    // Verify both exist
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(2, path_count);
+
+    PathEntry *found_default = find_path_by_prefix(
+        paths, path_count, (default_base >> (32 - default_mask)));
+    PathEntry *found_specific = find_path_by_prefix(
+        paths, path_count, (specific_base >> (32 - specific_mask)));
+
+    EXPECT_TRUE(found_default != NULL);
+    EXPECT_EQ(found_default->mask, default_mask);
+    EXPECT_TRUE(found_specific != NULL);
+    EXPECT_EQ(found_specific->mask, specific_mask);
+
+    // Delete default route
+    EXPECT_EQ(0, del(default_base, default_mask));
+
+    // Verify only specific prefix remains
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(1, path_count);
+
+    found_default = find_path_by_prefix(paths, path_count,
+                                        (default_base >> (32 - default_mask)));
+    found_specific = find_path_by_prefix(
+        paths, path_count, (specific_base >> (32 - specific_mask)));
+
+    EXPECT_TRUE(found_default == NULL);
+    EXPECT_TRUE(found_specific != NULL);
+    EXPECT_EQ(found_specific->mask, specific_mask);
+
+    // Clean up - delete remaining prefix
+    EXPECT_EQ(0, del(specific_base, specific_mask));
+
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(0, path_count);
+}
