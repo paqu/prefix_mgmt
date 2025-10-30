@@ -253,3 +253,69 @@ TEST_F(DelFunctionTest, DeleteDefaultRouteWithOtherPrefixes) {
     traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
     EXPECT_EQ(0, path_count);
 }
+
+TEST_F(DelFunctionTest, DeleteNonExistentPrefix) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+
+    unsigned int base1 = 0x0A000000; // 10.0.0.0/8
+    char mask1 = 8;
+
+    unsigned int base2 = 0x0CA80000; // 12.168.0.0/16
+    char mask2 = 16;
+
+    unsigned int base3 = 0xEC100000; // 236.16.0.0/12
+    char mask3 = 12;
+
+    unsigned int non_existent = 0x8B000000; // 139.0.0.0/8
+    char non_existent_mask = 8;
+
+    // Arrange: Add existing prefixes
+    EXPECT_EQ(0, add(base1, mask1));
+    EXPECT_EQ(0, add(base2, mask2));
+    EXPECT_EQ(0, add(base3, mask3));
+
+    // Verify all exist
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count);
+
+    PathEntry *found1 =
+        find_path_by_prefix(paths, path_count, (base1 >> (32 - mask1)));
+    PathEntry *found2 =
+        find_path_by_prefix(paths, path_count, (base2 >> (32 - mask2)));
+    PathEntry *found3 =
+        find_path_by_prefix(paths, path_count, (base3 >> (32 - mask3)));
+
+    EXPECT_TRUE(found1 != NULL);
+    EXPECT_EQ(found1->mask, mask1);
+    EXPECT_TRUE(found2 != NULL);
+    EXPECT_EQ(found2->mask, mask2);
+    EXPECT_TRUE(found3 != NULL);
+    EXPECT_EQ(found3->mask, mask3);
+
+    EXPECT_EQ(0, del(non_existent, non_existent_mask));
+
+    // Assert: Verify nothing changed - all 3 prefixes still exist
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    traverse(get_root_addr(), 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count); // Nadal 3 prefiksy
+
+    found1 = find_path_by_prefix(paths, path_count, (base1 >> (32 - mask1)));
+    found2 = find_path_by_prefix(paths, path_count, (base2 >> (32 - mask2)));
+    found3 = find_path_by_prefix(paths, path_count, (base3 >> (32 - mask3)));
+
+    EXPECT_TRUE(found1 != NULL);
+    EXPECT_EQ(found1->mask, mask1);
+    EXPECT_TRUE(found2 != NULL);
+    EXPECT_EQ(found2->mask, mask2);
+    EXPECT_TRUE(found3 != NULL);
+    EXPECT_EQ(found3->mask, mask3);
+
+    PathEntry *found_non_existent = find_path_by_prefix(
+        paths, path_count, (non_existent >> (32 - non_existent_mask)));
+    EXPECT_TRUE(found_non_existent == NULL);
+}
