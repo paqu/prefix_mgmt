@@ -29,3 +29,11 @@ TEST_F(DelFunctionTest, InvalidBaseMisaligned) {
         EXPECT_EQ(-1, del(base, i));
     }
 }
+
+// TC-DEL-4: Delete from empty tree - should succeed (no-op)
+TEST_F(DelFunctionTest, DeleteFromEmptyTree) {
+    prefix_mgmt_cleanup(); // Ensure tree is empty
+
+    // Deleting from empty tree should succeed (graceful no-op)
+    EXPECT_EQ(0, del(0x0A000000, 16));
+}
