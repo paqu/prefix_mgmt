@@ -304,7 +304,13 @@ char check(unsigned int ip) {
         return -1;
     }
 
+    radix_node_t *current = g_root;
     char best_match = -1;
+
+    // Check root
+    if (current->is_prefix) {
+        best_match = current->mask;
+    }
 
     return best_match;
 }
