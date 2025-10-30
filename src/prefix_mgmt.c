@@ -304,5 +304,7 @@ char check(unsigned int ip) {
         return -1;
     }
 
-    return 0;
+    char best_match = -1;
+
+    return best_match;
 }
