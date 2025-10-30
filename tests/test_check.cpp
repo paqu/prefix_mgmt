@@ -8,9 +8,16 @@ class CheckFunctionTest : public ::testing::Test {
     void TearDown() override { prefix_mgmt_cleanup(); }
 };
 
-// Test: Check without initialization
+// TC-CHK-1 Check without initialization
 TEST_F(CheckFunctionTest, CheckWithoutInit) {
     prefix_mgmt_cleanup();
 
     EXPECT_EQ(-1, check(0x0A000000)); // Should return -1
+}
+
+// TC-CHK-2: Empty Collection
+TEST_F(CheckFunctionTest, EmptyCollection) {
+    // No prefixes added
+    EXPECT_EQ(-1, check(0x0A000000)); // 10.0.0.0
+    EXPECT_EQ(-1, check(0xFFFFFFFF)); // 255.255.255.255
 }
