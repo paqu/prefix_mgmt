@@ -19,3 +19,13 @@ TEST_F(DelFunctionTest, InvalidMaskAboveRange) {
     unsigned int base = 0xC0AB0000; // 192.168.0.0
     EXPECT_EQ(-1, del(base, 33));
 }
+
+// TC-DEL-3: Invalid Base - Misaligned
+TEST_F(DelFunctionTest, InvalidBaseMisaligned) {
+    unsigned int base = 0x80000000;
+
+    for (int i = 1; i < 32; i++) {
+        base >>= 1;
+        EXPECT_EQ(-1, del(base, i));
+    }
+}
