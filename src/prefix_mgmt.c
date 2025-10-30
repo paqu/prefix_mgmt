@@ -248,7 +248,32 @@ int del(unsigned int base, char mask) {
         return 0; // Nothing to delete
     }
 
-    // TODO: Implement prefix deletion logic
+    // Traverse to find the prefix
+    radix_node_t *current = g_root;
+    int bit_pos = 0;
+
+    while (bit_pos < mask) {
+        int bit = get_bit(base, bit_pos);
+        radix_node_t *child = (bit == 0) ? current->left : current->right;
+
+        bit_pos += child->skip;
+
+        if (bit_pos == mask) {
+            // Found the target node
+            if (!child->is_prefix || child->mask != mask) {
+                return 0; // Prefix wasn't set
+            }
+
+            // Mark as deleted
+            child->is_prefix = false;
+            child->mask = -1;
+
+            return 0;
+        }
+
+        current = child;
+    }
+
     return 0;
 }
 
