@@ -263,6 +263,21 @@ int del(unsigned int base, char mask) {
         int bit = get_bit(base, bit_pos);
         radix_node_t *child = (bit == 0) ? current->left : current->right;
 
+        if (child == NULL) {
+            return 0; // Prefix doesn't exist
+        }
+
+        // Check path match
+        int remaining = mask - bit_pos;
+        if (child->skip > remaining) {
+            return 0; // Can't reach this prefix
+        }
+
+        unsigned int base_bits = extract_bits(base, bit_pos, child->skip);
+        if (base_bits != child->prefix) {
+            return 0; // Path doesn't match
+        }
+
         bit_pos += child->skip;
 
         if (bit_pos == mask) {
