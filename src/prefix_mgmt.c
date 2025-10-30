@@ -236,6 +236,14 @@ int add(unsigned int base, char mask) {
 }
 
 int del(unsigned int base, char mask) {
+    if (!is_valid_mask(mask)) {
+        return -1;
+    }
+
+    if (!is_aligned(base, mask)) {
+        return -1;
+    }
+
     // TODO: Implement prefix deletion logic
     return 0;
 }
