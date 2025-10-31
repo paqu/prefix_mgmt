@@ -20,14 +20,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_TESTS "Build tests" ON)
-option(BUILD_EXAMPLES "Build example programs" ON)
-option(BUILD_DOCS "Build documentation" ON)
+option(BUILD_DOCS "Build documentation" OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
 if(ENABLE_COVERAGE)
     add_compile_options(--coverage)
     add_link_options(--coverage)
 endif()
+
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
@@ -39,10 +39,6 @@ add_subdirectory(src)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
-endif()
-
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
 endif()
 
 if(BUILD_DOCS)
