@@ -38,3 +38,11 @@ TEST_F(CheckFunctionTest, DefaultRouteCatchesEverything) {
     EXPECT_EQ(0, check(0x7F000001));
     EXPECT_EQ(0, check(0xFFFFFFFF));
 }
+
+TEST_F(CheckFunctionTest, ExactMatch) {
+    unsigned int base = 0x0A000000; // 10.0.0.0
+    add(base, 8);
+
+    // Check exact base address
+    EXPECT_EQ(8, check(0x0A000000)); // 10.0.0.0
+}
