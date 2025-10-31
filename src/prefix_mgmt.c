@@ -104,6 +104,57 @@ static int count_matching_bits(unsigned int prefix1, unsigned int prefix2,
     return match;
 }
 
+#if 0
+// TODO - Check in case the current implementation is too slow.
+static inline int clz_portable(unsigned int x) {
+    if (x == 0)
+        return sizeof(unsigned int) * 8;
+
+#if defined(__GNUC__) || defined(__clang__)
+    // GCC/Clang intrinsic
+    return __builtin_clz(x);
+#else
+    // Fallback: binary search
+    int n = 0;
+    if (x <= 0x0000FFFF) {
+        n += 16;
+        x <<= 16;
+    }
+    if (x <= 0x00FFFFFF) {
+        n += 8;
+        x <<= 8;
+    }
+    if (x <= 0x0FFFFFFF) {
+        n += 4;
+        x <<= 4;
+    }
+    if (x <= 0x3FFFFFFF) {
+        n += 2;
+        x <<= 2;
+    }
+    if (x <= 0x7FFFFFFF) {
+        n += 1;
+    }
+    return n;
+#endif
+}
+
+static int count_matching_bits(unsigned int prefix1, unsigned int prefix2,
+                               int start_bit, int max_bits) {
+    if (max_bits == 0)
+        return 0;
+
+    unsigned int p1 = prefix1 << start_bit;
+    unsigned int p2 = prefix2 << start_bit;
+    unsigned int diff = p1 ^ p2;
+
+    if (diff == 0)
+        return max_bits;
+
+    int match = clz_portable(diff);
+    return (match < max_bits) ? match : max_bits;
+}
+#endif
 /**
  * @brief Checks if mask length is valid.
  *
