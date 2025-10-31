@@ -30,7 +30,12 @@ target_link_libraries(test_runner
     GTest::gtest_main
 )
 
-target_compile_options(test_runner PRIVATE -Wall -Wextra)
+target_compile_options(test_runner 
+    PRIVATE 
+        -Wall -Wextra -Wpedantic
+        "$<$<CONFIG:Debug>:-O0>"
+        "$<$<CONFIG:Debug>:-g>"
+)
 
 # Discover tests
 include(GoogleTest)
