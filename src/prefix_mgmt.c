@@ -8,10 +8,20 @@
  *
  */
 
+/**
+ * @brief Root node of the radix tree.
+ *
+ * This is the starting point for all operations.
+ */
 static radix_node_t *g_root = NULL;
 
-radix_node_t *get_root_addr(void) { return g_root; }
-
+/**
+ * @brief Creates a new radix node.
+ *
+ * Allocates memory and sets all fields to default values.
+ *
+ * @return Pointer to new node, or NULL if allocation fails
+ */
 static radix_node_t *create_node(void) {
     radix_node_t *node = (radix_node_t *)calloc(1, sizeof(radix_node_t));
     if (node == NULL) {
@@ -26,6 +36,11 @@ static radix_node_t *create_node(void) {
     return node;
 }
 
+/**
+ * @brief Frees a node and all its children.
+ *
+ * @param node Node to free (can be NULL)
+ */
 static void free_node(radix_node_t *node) {
     if (node == NULL) {
         return;
@@ -35,30 +50,27 @@ static void free_node(radix_node_t *node) {
     free(node);
 }
 
-int prefix_mgmt_init(void) {
-    if (g_root != NULL) {
-        prefix_mgmt_cleanup();
-    }
-
-    g_root = create_node();
-    if (g_root == NULL) {
-        return -1;
-    }
-
-    return 0;
-}
-
-void prefix_mgmt_cleanup(void) {
-    if (g_root != NULL) {
-        free_node(g_root);
-        g_root = NULL;
-    }
-}
-
+/**
+ * @brief Gets a single bit from an IP address.
+ *
+ * Bits are numbered 0-31, where 0 is the leftmost bit.
+ *
+ * @param ip IP address
+ * @param bit_pos Bit position (0-31)
+ * @return 0 or 1
+ */
 static int get_bit(unsigned int ip, int bit_pos) {
     return (ip >> (31 - bit_pos)) & 1;
 }
 
+/**
+ * @brief Extracts multiple bits from an IP address.
+ *
+ * @param ip IP address
+ * @param start_bit Starting position
+ * @param num_bits How many bits to extract
+ * @return Extracted bits
+ */
 static unsigned int extract_bits(unsigned int ip, int start_bit, int num_bits) {
     if (num_bits == 0)
         return 0;
@@ -68,6 +80,17 @@ static unsigned int extract_bits(unsigned int ip, int start_bit, int num_bits) {
     return (ip >> (32 - start_bit - num_bits)) & mask;
 }
 
+/**
+ * @brief Counts how many bits match between two prefixes.
+ *
+ * Compares bits starting from start_bit and stops at first difference.
+ *
+ * @param prefix1 First prefix
+ * @param prefix2 Second prefix
+ * @param start_bit Where to start comparing
+ * @param max_bits Maximum bits to compare
+ * @return Number of matching bits
+ */
 static int count_matching_bits(unsigned int prefix1, unsigned int prefix2,
                                int start_bit, int max_bits) {
     int match = 0;
@@ -82,14 +105,23 @@ static int count_matching_bits(unsigned int prefix1, unsigned int prefix2,
 }
 
 /**
- * @brief Validate mask
+ * @brief Checks if mask length is valid.
+ *
+ * @param mask Mask to check
+ * @return true if mask is 0-32, false otherwise
  */
 static bool is_valid_mask(char mask) { return mask >= 0 && mask <= 32; }
 
 /**
- * @brief Check base alignment
+ * @brief Checks if base address is correctly aligned.
+ *
+ * Base is aligned if all host bits are zero.
+ * Example: 192.168.1.0/24 is aligned, 192.168.1.5/24 is not.
+ *
+ * @param base Base address
+ * @param mask Mask length
+ * @return true if aligned, false otherwise
  */
-
 static bool is_aligned(unsigned int base, char mask) {
     if (mask == 0) {
         return base == 0;
@@ -336,4 +368,26 @@ char check(unsigned int ip) {
     }
 
     return best_match;
+}
+
+radix_node_t *get_root_addr(void) { return g_root; }
+
+int prefix_mgmt_init(void) {
+    if (g_root != NULL) {
+        prefix_mgmt_cleanup();
+    }
+
+    g_root = create_node();
+    if (g_root == NULL) {
+        return -1;
+    }
+
+    return 0;
+}
+
+void prefix_mgmt_cleanup(void) {
+    if (g_root != NULL) {
+        free_node(g_root);
+        g_root = NULL;
+    }
 }

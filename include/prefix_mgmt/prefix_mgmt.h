@@ -14,10 +14,29 @@ extern "C" {
 #endif
 
 /**
- * @brief Radix trie node
+ * @struct radix_node
+ * @brief Node in radix tree with path compression.
  *
- * Unlike binary trie where each node represents one bit,
- * radix node can represent multiple bits (compressed path).
+ * This structure stores IPv4 prefixes efficiently. Each node can
+ * store multiple bits to save memory.
+ *
+ * @var radix_node::left
+ * Child for paths starting with 0
+ *
+ * @var radix_node::right
+ * Child for paths starting with 1
+ *
+ * @var radix_node::prefix
+ * The bit sequence stored here
+ *
+ * @var radix_node::skip
+ * How many bits this node stores
+ *
+ * @var radix_node::is_prefix
+ * True if this is a complete prefix
+ *
+ * @var radix_node::mask
+ * Prefix length (0-32) if is_prefix is true, -1 otherwise
  */
 typedef struct radix_node {
     struct radix_node *left;  /**< Child for bit sequence starting with 0 */
@@ -30,9 +49,27 @@ typedef struct radix_node {
     char mask;      /**< Mask length if is_prefix is true */
 } radix_node_t;
 
+/**
+ * @brief Gets the root node of the radix tree.
+ *
+ * @return Pointer to root node, or NULL if not initialized
+ */
 radix_node_t *get_root_addr(void);
 
+/**
+ * @brief Initializes the prefix management system.
+ *
+ * Creates the root node. If root already exists, cleans up first.
+ *
+ * @return 0 on success, -1 if memory allocation fails
+ */
 int prefix_mgmt_init(void);
+
+/**
+ * @brief Cleans up and frees all memory.
+ *
+ * Frees all nodes in the tree and sets root to NULL.
+ */
 void prefix_mgmt_cleanup(void);
 
 /**
