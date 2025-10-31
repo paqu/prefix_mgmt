@@ -14,6 +14,7 @@ add_executable(test_runner
     test_add.cpp
     test_check.cpp
     test_del.cpp
+    test_integration.cpp
     test_utils.cpp
 )
 
