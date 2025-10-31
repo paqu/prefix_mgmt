@@ -311,6 +311,29 @@ char check(unsigned int ip) {
     if (current->is_prefix) {
         best_match = current->mask;
     }
+    int bit_pos = 0;
+    while (bit_pos < 32) {
+        int bit = get_bit(ip, bit_pos);
+        radix_node_t *child = (bit == 0) ? current->left : current->right;
+
+        if (child == NULL) {
+            break;
+        }
+
+        // Check if IP matches the compressed path
+        unsigned int ip_bits = extract_bits(ip, bit_pos, child->skip);
+        if (ip_bits != child->prefix) {
+            break; // Path doesn't match
+        }
+
+        bit_pos += child->skip;
+        current = child;
+
+        // Update best match
+        if (current->is_prefix) {
+            best_match = current->mask;
+        }
+    }
 
     return best_match;
 }
