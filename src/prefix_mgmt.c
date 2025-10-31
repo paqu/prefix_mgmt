@@ -193,11 +193,8 @@ int add(unsigned int base, char mask) {
         return -1;
     }
 
-    // Initialize if needed
     if (g_root == NULL) {
-        if (prefix_mgmt_init() != 0) {
-            return -1;
-        }
+        return -1;
     }
 
     // Special case: /0 prefix at root
@@ -328,7 +325,7 @@ int del(unsigned int base, char mask) {
     }
 
     if (g_root == NULL) {
-        return 0; // Nothing to delete
+        return -1;
     }
 
     // Special case: /0 prefix

@@ -155,6 +155,7 @@ TEST_F(AddFunctionTest, ValidPrefixAdditionDifferentMask) {
     path_count = 0;
     memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
     prefix_mgmt_cleanup();
+    prefix_mgmt_init();
 
     base = 0xFA000000;
     EXPECT_EQ(0, add(base, 24));
@@ -224,4 +225,14 @@ TEST_F(AddFunctionTest, BoundaryMask0) {
 TEST_F(AddFunctionTest, BoundaryMask32) {
     unsigned int base = 0x0A000000; // 10.0.0.0
     EXPECT_EQ(0, add(base, 32));    // 10.0.0.0/32
+}
+
+TEST_F(AddFunctionTest, FailWhenNotInitialized) {
+    prefix_mgmt_cleanup();
+    unsigned int base = 0xA0B00000;
+    char mask = 16;
+    EXPECT_EQ(-1, add(base, mask));
+
+    prefix_mgmt_init();
+    EXPECT_EQ(0, add(base, mask));
 }

@@ -31,11 +31,14 @@ TEST_F(DelFunctionTest, InvalidBaseMisaligned) {
     }
 }
 
-// TC-DEL-4: Delete from empty tree - should succeed (no-op)
-TEST_F(DelFunctionTest, DeleteFromEmptyNotInitializedTree) {
+// TC-DEL-4: Delete from not initialized tree should fail
+TEST_F(DelFunctionTest, DeleteFromNotInitializedTree) {
     prefix_mgmt_cleanup(); // Ensure tree is not initialized
 
     // Deleting from not initialized tree should succeed (graceful no-op)
+    EXPECT_EQ(-1, del(0x0A000000, 16));
+
+    prefix_mgmt_init();
     EXPECT_EQ(0, del(0x0A000000, 16));
 }
 
