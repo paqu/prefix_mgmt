@@ -253,10 +253,22 @@ int add(unsigned int base, char mask) {
             current = child;
             continue;
         }
-        // Partial match - need to split the node
+
+        int new_remaining = remaining - match_bits;
+
         radix_node_t *split = create_node();
         if (split == NULL) {
-            return -1;
+            return -1; // Bezpieczne - nic nie zmieniliśmy
+        }
+
+        // split
+        radix_node_t *new_branch = NULL;
+        if (new_remaining > 0) {
+            new_branch = create_node();
+            if (new_branch == NULL) {
+                free(split);
+                return -1;
+            }
         }
 
         // Split node contains matched portion
@@ -284,18 +296,12 @@ int add(unsigned int base, char mask) {
         *child_ptr = split;
 
         // Check if we need to add new branch
-        int new_remaining = remaining - match_bits;
         if (new_remaining == 0) {
             // Our prefix ends at split point
             split->is_prefix = true;
             split->mask = mask;
         } else {
-            // Create new branch for remaining bits
-            radix_node_t *new_branch = create_node();
-            if (new_branch == NULL) {
-                return -1;
-            }
-
+            // Add the pre-allocated new_branch
             new_branch->skip = new_remaining;
             new_branch->prefix =
                 extract_bits(base, bit_pos + match_bits, new_remaining);
