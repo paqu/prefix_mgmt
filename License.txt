@@ -1,0 +1,76 @@
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+IPv4 Prefix Management System
+Copyright (c) 2025 Paweł Kusz / Pakusoft. All rights reserved.
+
+================================================================================
+
+GRANT OF LICENSE
+
+This source code and associated documentation files (the "Software") are 
+provided under the following terms and conditions:
+
+1. EVALUATION AND REVIEW RIGHTS
+   The recipient is granted a non-exclusive, non-transferable license to:
+   - Review and evaluate the source code
+   - Compile and test the Software for evaluation purposes
+   - Analyze the implementation and design
+
+2. RESTRICTIONS
+   The following actions are strictly prohibited without prior written 
+   permission from the copyright holder:
+   
+   a) Commercial Use: Using the Software or any part thereof in any 
+      commercial product, service, or application
+   
+   b) Distribution: Copying, distributing, or sharing the Software with 
+      third parties
+   
+   c) Modification for Commercial Purposes: Creating derivative works 
+      based on this Software for commercial use
+   
+   d) Sublicensing: Granting rights to use this Software to any third party
+   
+   e) Integration: Incorporating this Software into proprietary or 
+      commercial products
+
+3. PERMITTED MODIFICATIONS
+   Modifications to the Software are allowed solely for:
+   - Internal evaluation purposes
+   - Testing and benchmarking
+   - Academic research (non-commercial)
+
+4. OWNERSHIP
+   Paweł Kusz / Pakusoft retains all rights, title, and interest in and to 
+   the Software, including all intellectual property rights.
+
+5. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+6. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES 
+   OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE.
+
+7. COMMERCIAL LICENSE
+   For commercial use, integration, or distribution rights, please contact:
+   
+   Paweł Kusz
+   Pakusoft
+   Email: pawel.kusz1993@gmail.com
+
+8. TERMINATION
+   This license automatically terminates if you violate any of these terms.
+   Upon termination, you must destroy all copies of the Software.
+
+9. GOVERNING LAW
+   This agreement shall be governed by the laws of Poland.
+
+================================================================================
+
+By using this Software, you acknowledge that you have read this agreement,
+understand it, and agree to be bound by its terms and conditions.
+
+Contact for inquiries: pawel.kusz1993@gmail.com
