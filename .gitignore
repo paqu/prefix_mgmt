@@ -51,7 +51,7 @@ Testing/
 CTestTestfile.cmake
 compile_commands.json
 build/
-build-*/
+build*/
 out/
 bin/
 lib/
