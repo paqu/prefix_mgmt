@@ -200,7 +200,7 @@ TEST_F(AddFunctionTest, DuplicatePrefix) {
     char mask;
     PathEntry *found;
 
-    base = 0x0A0B0000; // 10.0.0.0/8
+    base = 0x0A0B0000;
     mask = 16;
     EXPECT_EQ(0, add(base, mask));
     EXPECT_EQ(0, add(base, mask)); // Second add should succeed (no error)
@@ -235,4 +235,76 @@ TEST_F(AddFunctionTest, FailWhenNotInitialized) {
 
     prefix_mgmt_init();
     EXPECT_EQ(0, add(base, mask));
+}
+
+TEST_F(AddFunctionTest, MultilplePrefixesImprCoverage) {
+    NodeStack stack = {.top = 0};
+    PathEntry paths[MAX_PATHS];
+    int path_count = 0;
+    radix_node_t *root_ptr;
+    unsigned int base;
+    char mask;
+    PathEntry *found;
+
+    base = 0x0A0B0100; // 10.11.1.0/24
+    mask = 24;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(1, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 24);
+
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    base = 0x0A0B0200; // 10.11.2.0/24
+    mask = 24;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(2, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 24);
+
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    base = 0x0A0B8000; // 10.11.128.0/24
+    mask = 24;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(3, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 24);
+
+    path_count = 0;
+    memset(paths, 0, MAX_PATHS * sizeof(PathEntry));
+    base = 0x0A0B0000; // 10.11.128.0/24
+    mask = 16;
+    EXPECT_EQ(0, add(base, mask));
+    root_ptr = get_root_addr();
+    EXPECT_TRUE(root_ptr != NULL);
+    traverse(root_ptr, 0, 0, &stack, paths, &path_count);
+    EXPECT_EQ(4, path_count);
+    found = find_path_by_prefix(paths, path_count,
+                                (base >> (32 - mask)) & 0xffffffff);
+
+    EXPECT_TRUE(found != NULL);
+    EXPECT_EQ(found->full_prefix, (base >> (32 - mask)) & 0xffffffff);
+    EXPECT_EQ(found->mask, 16);
 }
