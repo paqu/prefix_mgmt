@@ -321,15 +321,73 @@ int add(unsigned int base, char mask) {
     return 0;
 }
 
+/**
+ * @brief Cleans up a radix tree node by removing or merging it if possible.
+ *
+ * Handles three cases:
+ *  - No children: removes the node.
+ *  - One child: merges the node with its child.
+ *  - Two children: leaves the node unchanged.
+ *
+ * @param parent           Pointer to the parent node.
+ * @param node             Pointer to the node to clean up.
+ * @param parent_direction 0 if node is the left child, 1 if right.
+ *
+ * @note The function may free memory; freed nodes must not be accessed
+ * afterward.
+ */
+void cleanup_node(radix_node_t *parent, radix_node_t *node,
+                  int parent_direction) {
+
+    int child_count = (node->left != NULL) + (node->right != NULL);
+
+    // Case 1: No children - remove node completely
+    if (child_count == 0) {
+
+        // Remove from parent
+        if (parent_direction == 0) {
+            parent->left = NULL;
+        } else {
+            parent->right = NULL;
+        }
+        free(node);
+        return;
+    }
+
+    // Case 2: Exactly one child - MERGE DOWN (absorb child into this node)
+    if (child_count == 1) {
+        radix_node_t *child = (node->left != NULL) ? node->left : node->right;
+
+        // MERGE DOWN: This node absorbs its child
+        // Combine the path: node's prefix bits + child's prefix bits
+        unsigned int combined_prefix =
+            (node->prefix << child->skip) | child->prefix;
+        unsigned char combined_skip = node->skip + child->skip;
+
+        // Replace this node's data with merged data
+        node->prefix = combined_prefix;
+        node->skip = combined_skip;
+        node->left = child->left;
+        node->right = child->right;
+        node->is_prefix = child->is_prefix;
+        node->mask = child->mask;
+
+        // Free the child (it's been absorbed)
+        free(child);
+        return;
+    }
+
+    // Case 3: Two children - keep node as branch point
+    return;
+}
+
 int del(unsigned int base, char mask) {
     if (!is_valid_mask(mask)) {
         return -1;
     }
-
     if (!is_aligned(base, mask)) {
         return -1;
     }
-
     if (g_root == NULL) {
         return -1;
     }
@@ -353,7 +411,6 @@ int del(unsigned int base, char mask) {
             return 0; // Prefix doesn't exist
         }
 
-        // Check path match
         int remaining = mask - bit_pos;
         if (child->skip > remaining) {
             return 0; // Can't reach this prefix
@@ -376,9 +433,13 @@ int del(unsigned int base, char mask) {
             child->is_prefix = false;
             child->mask = -1;
 
+            // Cleanup this node (merge down with child or remove if leaf)
+            cleanup_node(current, child, bit);
+
             return 0;
         }
 
+        // Move to next node
         current = child;
     }
 
